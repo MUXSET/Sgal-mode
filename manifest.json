@@ -1,0 +1,9 @@
+{
+    "name": "Simple GAL Mode",
+    "display_name": "简易 GAL 模式",
+    "version": "1.0.0",
+    "author": "YourName",
+    "description": "将聊天界面转换为视觉小说(GALGame)风格。",
+    "css": "style.css",
+    "js": "src/main.js"
+}

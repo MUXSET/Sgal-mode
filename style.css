@@ -1,0 +1,1273 @@
+/* --- 1. 全屏容器 --- */
+#gal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    background-color: #000;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    pointer-events: none;
+}
+
+body.gal-mode-active #gal-overlay {
+    display: flex;
+    pointer-events: auto;
+}
+
+body.gal-mode-active #chat,
+body.gal-mode-active #top-bar {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* --- 2. 背景层 --- */
+#gal-bg-blur {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -3;
+    background-size: cover;
+    background-position: center;
+    filter: blur(30px) brightness(0.5);
+    transition: background-image 0.6s ease;
+}
+
+#gal-bg-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 0.6s ease;
+}
+
+/* --- 3. 控制区和进度显示 --- */
+#gal-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000010;
+    pointer-events: auto;
+    display: flex;
+    gap: 10px;
+}
+
+#gal-progress {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000010;
+    pointer-events: none;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+}
+
+.gal-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    backdrop-filter: blur(5px);
+}
+
+.gal-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+/* --- 4. 设置菜单 --- */
+#gal-settings-menu {
+    display: none;
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    width: 220px;
+    background: rgba(20, 20, 20, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: 15px;
+    z-index: 1000015;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    pointer-events: auto;
+}
+
+#gal-settings-menu.active {
+    display: block;
+}
+
+.gal-setting-item {
+    margin-bottom: 15px;
+}
+
+.gal-setting-label {
+    color: #ddd;
+    font-size: 13px;
+    margin-bottom: 8px;
+    display: block;
+    font-weight: bold;
+}
+
+.gal-slider {
+    width: 100%;
+    cursor: pointer;
+    accent-color: #00d2ff;
+}
+
+/* --- 5. 对话框核心 (传统的日式GALGAME风格 - 底部渐变) --- */
+#gal-dialogue-box {
+    width: 100%;
+    height: 35vh;
+    /* 占据底部35%的高度 */
+    min-height: auto;
+    margin-bottom: 0;
+    padding: 20px 10% 40px 10%;
+    box-sizing: border-box;
+    /* 底部黑色渐变背景，顶部透明 */
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.6) 30%, rgba(0, 0, 0, 0.9) 100%);
+    border: none;
+    border-radius: 0;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* 内容垂直居中 */
+    cursor: pointer;
+    z-index: 10;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    backdrop-filter: none;
+    box-shadow: none;
+}
+
+/* 名字标签 - 纯文字风格，位于对话上方 */
+#gal-name-tag {
+    position: relative;
+    top: auto;
+    left: auto;
+    bottom: auto;
+    margin-bottom: 15px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    transform: none;
+
+    font-family: "黑体", "SimHei", system-ui;
+    font-size: 26px;
+    font-weight: bold;
+    color: #fff;
+    text-align: left;
+    /* 强力描边，确保清晰可见 */
+    text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+}
+
+/* 移除之前的伪元素 */
+#gal-name-tag::before {
+    display: none;
+}
+
+#gal-text-content {
+    font-size: 26px;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    font-weight: bold;
+    color: #fff;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.typing-cursor {
+    display: inline-block;
+    color: #00d2ff;
+    animation: blink 1s step-end infinite;
+    margin-left: 2px;
+    text-shadow: none;
+    -webkit-text-stroke: 0;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+#gal-next-indicator {
+    position: absolute;
+    bottom: 20px;
+    right: 15%;
+    font-size: 30px;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
+    opacity: 0;
+    animation: gal-float 1s infinite ease-in-out;
+}
+
+#gal-next-indicator.visible {
+    opacity: 1;
+}
+
+#gal-next-indicator::after {
+    content: "▼";
+}
+
+@keyframes gal-float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(8px);
+    }
+}
+
+/* --- 6. Save/Load Modal --- */
+.gal-modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    max-width: 90%;
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #00d2ff;
+    border-radius: 10px;
+    padding: 20px;
+    display: none;
+    z-index: 1000020;
+    color: white;
+    pointer-events: auto;
+}
+
+.gal-modal.active {
+    display: block;
+}
+
+.gal-modal-content h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+#gal-save-slots {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.gal-slot-item {
+    background: #222;
+    border: 1px solid #444;
+    margin-bottom: 10px;
+    padding: 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+    pointer-events: auto;
+    position: relative;
+}
+
+.gal-slot-item:hover {
+    background: #333;
+    border-color: #00d2ff;
+    transform: translateX(3px);
+}
+
+.gal-slot-id {
+    font-weight: bold;
+    color: #00d2ff;
+    width: 70px;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.gal-slot-info {
+    flex: 1;
+    text-align: right;
+    font-size: 12px;
+    color: #aaa;
+    pointer-events: none;
+}
+
+.gal-slot-info .time {
+    font-size: 11px;
+    color: #666;
+}
+
+.gal-slot-info .preview {
+    color: #fff;
+    font-size: 14px;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gal-slot-info .empty {
+    color: #555;
+    font-style: italic;
+}
+
+.gal-modal-close {
+    width: 100%;
+    padding: 10px;
+    background: #444;
+    border: none;
+    color: white;
+    cursor: pointer;
+    margin-top: 10px;
+    pointer-events: auto;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.gal-modal-close:hover {
+    background: #666;
+}
+
+/* --- History Viewer --- */
+#gal-history-content {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+.gal-history-item {
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid #00d2ff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.gal-history-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(3px);
+}
+
+.gal-history-name {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.gal-history-text {
+    font-size: 13px;
+    right: 15%;
+    font-size: 30px;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000;
+    opacity: 0;
+    animation: gal-float 1s infinite ease-in-out;
+}
+
+#gal-next-indicator.visible {
+    opacity: 1;
+}
+
+#gal-next-indicator::after {
+    content: "▼";
+}
+
+@keyframes gal-float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(8px);
+    }
+}
+
+/* --- 6. Save/Load Modal --- */
+.gal-modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    max-width: 90%;
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #00d2ff;
+    border-radius: 10px;
+    padding: 20px;
+    display: none;
+    z-index: 1000020;
+    color: white;
+    pointer-events: auto;
+}
+
+.gal-modal.active {
+    display: block;
+}
+
+.gal-modal-content h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+#gal-save-slots {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.gal-slot-item {
+    background: #222;
+    border: 1px solid #444;
+    margin-bottom: 10px;
+    padding: 15px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+    pointer-events: auto;
+    position: relative;
+}
+
+.gal-slot-item:hover {
+    background: #333;
+    border-color: #00d2ff;
+    transform: translateX(3px);
+}
+
+.gal-slot-id {
+    font-weight: bold;
+    color: #00d2ff;
+    width: 70px;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.gal-slot-info {
+    flex: 1;
+    text-align: right;
+    font-size: 12px;
+    color: #aaa;
+    pointer-events: none;
+}
+
+.gal-slot-info .time {
+    font-size: 11px;
+    color: #666;
+}
+
+.gal-slot-info .preview {
+    color: #fff;
+    font-size: 14px;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gal-slot-info .empty {
+    color: #555;
+    font-style: italic;
+}
+
+.gal-modal-close {
+    width: 100%;
+    padding: 10px;
+    background: #444;
+    border: none;
+    color: white;
+    cursor: pointer;
+    margin-top: 10px;
+    pointer-events: auto;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.gal-modal-close:hover {
+    background: #666;
+}
+
+/* --- History Viewer --- */
+#gal-history-content {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+.gal-history-item {
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid #00d2ff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.gal-history-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(3px);
+}
+
+.gal-history-name {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.gal-history-text {
+    font-size: 13px;
+    color: #ddd;
+    line-height: 1.5;
+}
+
+/* --- 7. 入口按钮 --- */
+#activate-gal {
+    position: fixed;
+    bottom: 20px;
+    left: 80px;
+    z-index: 999998;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+    font-weight: bold;
+    transition: 0.2s;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+#activate-gal:hover {
+    background: #fff;
+    color: #000;
+    transform: scale(1.05);
+}
+
+/* =========================================
+   GAL Mode - Title Screen Styles
+   ========================================= */
+
+#gal-title-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    /* Above background, below controls if needed */
+    background: rgba(0, 0, 0, 0.3);
+    /* Slight dim */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+#gal-title-screen.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#gal-game-title {
+    font-family: "Noto Serif JP", "SimSun", serif;
+    font-size: 64px;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 2px 2px 4px rgba(0, 0, 0, 0.8);
+    margin-bottom: 60px;
+    letter-spacing: 4px;
+    text-align: center;
+    animation: titleFloat 3s ease-in-out infinite;
+}
+
+@keyframes titleFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.gal-title-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 300px;
+}
+
+.gal-title-btn {
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0.6) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 15px 0;
+    font-size: 20px;
+    font-family: "Noto Sans SC", sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.gal-title-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.gal-title-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #00d2ff;
+    color: #00d2ff;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+}
+
+.gal-title-btn:hover::before {
+    left: 100%;
+}
+
+/* Hide gameplay elements when on title screen */
+body.gal-title-active #gal-dialogue-box,
+body.gal-title-active #gal-controls,
+body.gal-title-active #gal-progress {
+    display: none !important;
+}
+
+/ *   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =           G A L   M o d e   -   C h a r a c t e r   S e l e c t o r   S t y l e s           = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =   * /         / *   C h a r a c t e r   G r i d   C o n t a i n e r   * /     # g a l - c h a r a c t e r - g r i d    {
+                 d i s p l a y :    g r i d ;
+                 g r i d - t e m p l a t e - c o l u m n s :    r e p e a t ( a u t o - f i l l ,    m i n m a x ( 1 5 0 p x ,    1 f r ) ) ;
+                 g a p :    2 0 p x ;
+                 m a x - h e i g h t :    5 0 0 p x ;
+                 o v e r f l o w - y :    a u t o ;
+                 p a d d i n g :    2 0 p x   1 0 p x ;
+         
+}
+
+         / *   C h a r a c t e r   C a r d   * /     . g a l - c h a r a c t e r - c a r d    {
+                 b a c k g r o u n d :    l i n e a r - g r a d i e n t ( 1 3 5 d e g ,    r g b a ( 0 ,    0 ,    0 ,    0 . 6 ) ,    r g b a ( 0 ,    0 ,    0 ,    0 . 8 ) ) ;
+                 b o r d e r :    2 p x   s o l i d   r g b a ( 2 5 5 ,    2 5 5 ,    2 5 5 ,    0 . 2 ) ;
+                 b o r d e r - r a d i u s :    1 0 p x ;
+                 p a d d i n g :    1 5 p x ;
+                 c u r s o r :    p o i n t e r ;
+                 t r a n s i t i o n :    a l l   0 . 3 s   e a s e ;
+                 p o s i t i o n :    r e l a t i v e ;
+                 o v e r f l o w :    h i d d e n ;
+         
+}
+
+         . g a l - c h a r a c t e r - c a r d : h o v e r    {
+                 b o r d e r - c o l o r :    # 0 0 d 2 f f ;
+                 t r a n s f o r m :    t r a n s l a t e Y ( - 5 p x )   s c a l e ( 1 . 0 5 ) ;
+                 b o x - s h a d o w :    0   5 p x   2 5 p x   r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 4 ) ;
+         
+}
+
+         . g a l - c h a r a c t e r - c a r d . a c t i v e    {
+                 b o r d e r - c o l o r :    # 0 0 f f 8 8 ;
+                 b a c k g r o u n d :    l i n e a r - g r a d i e n t ( 1 3 5 d e g ,    r g b a ( 0 ,    2 5 5 ,    1 3 6 ,    0 . 2 ) ,    r g b a ( 0 ,    0 ,    0 ,    0 . 9 ) ) ;
+                 b o x - s h a d o w :    0   0   2 0 p x   r g b a ( 0 ,    2 5 5 ,    1 3 6 ,    0 . 3 ) ;
+         
+}
+
+         / *   C h a r a c t e r   A v a t a r   i n   C a r d   * /     . g a l - c h a r a c t e r - a v a t a r    {
+                 w i d t h :    1 0 0 % ;
+                 p a d d i n g - t o p :    1 0 0 % ;
+                 / *   1 :  1   A s p e c t   R a t i o   * /             b a c k g r o u n d - s i z e :   c o v e r ;
+                 b a c k g r o u n d - p o s i t i o n :    c e n t e r ;
+                 b a c k g r o u n d - r e p e a t :    n o - r e p e a t ;
+                 b o r d e r - r a d i u s :    8 p x ;
+                 m a r g i n - b o t t o m :    1 0 p x ;
+                 b o r d e r :    2 p x   s o l i d   r g b a ( 2 5 5 ,    2 5 5 ,    2 5 5 ,    0 . 1 ) ;
+                 t r a n s i t i o n :    a l l   0 . 3 s   e a s e ;
+         
+}
+
+         . g a l - c h a r a c t e r - c a r d : h o v e r   . g a l - c h a r a c t e r - a v a t a r    {
+                 b o r d e r - c o l o r :    # 0 0 d 2 f f ;
+                 b o x - s h a d o w :    0   0   1 5 p x   r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 5 ) ;
+         
+}
+
+         . g a l - c h a r a c t e r - c a r d . a c t i v e   . g a l - c h a r a c t e r - a v a t a r    {
+                 b o r d e r - c o l o r :    # 0 0 f f 8 8 ;
+         
+}
+
+         / *   C h a r a c t e r   N a m e   i n   C a r d   * /     . g a l - c h a r a c t e r - n a m e    {
+                 t e x t - a l i g n :    c e n t e r ;
+                 f o n t - s i z e :    1 4 p x ;
+                 c o l o r :    # f f f ;
+                 f o n t - w e i g h t :    b o l d ;
+                 m a r g i n - t o p :    8 p x ;
+                 t e x t - s h a d o w :    1 p x   1 p x   2 p x   r g b a ( 0 ,    0 ,    0 ,    0 . 8 ) ;
+                 w h i t e - s p a c e :    n o w r a p ;
+                 o v e r f l o w :    h i d d e n ;
+                 t e x t - o v e r f l o w :    e l l i p s i s ;
+         
+}
+
+         / *   C u r r e n t   C h a r a c t e r   B a d g e   * /     . g a l - c h a r a c t e r - b a d g e    {
+                 p o s i t i o n :    a b s o l u t e ;
+                 t o p :    1 0 p x ;
+                 r i g h t :    1 0 p x ;
+                 b a c k g r o u n d :    # 0 0 f f 8 8 ;
+                 c o l o r :    # 0 0 0 ;
+                 f o n t - s i z e :    1 0 p x ;
+                 p a d d i n g :    3 p x   8 p x ;
+                 b o r d e r - r a d i u s :    1 0 p x ;
+                 f o n t - w e i g h t :    b o l d ;
+                 b o x - s h a d o w :    0   2 p x   8 p x   r g b a ( 0 ,    2 5 5 ,    1 3 6 ,    0 . 5 ) ;
+         
+}
+
+         / *   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =           C u r r e n t   C a r t r i d g e   D i s p l a y   o n   T i t l e   S c r e e n           = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =   * /         . g a l - c u r r e n t - c a r t r i d g e    {
+                 d i s p l a y :    f l e x ;
+                 a l i g n - i t e m s :    c e n t e r ;
+                 j u s t i f y - c o n t e n t :    c e n t e r ;
+                 g a p :    1 5 p x ;
+                 m a r g i n - t o p :    2 0 p x ;
+                 p a d d i n g :    1 5 p x ;
+                 b a c k g r o u n d :    r g b a ( 0 ,    0 ,    0 ,    0 . 5 ) ;
+                 b o r d e r :    2 p x   s o l i d   r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 3 ) ;
+                 b o r d e r - r a d i u s :    1 5 p x ;
+                 b a c k d r o p - f i l t e r :    b l u r ( 1 0 p x ) ;
+         
+}
+
+         . g a l - c a r t r i d g e - a v a t a r    {
+                 w i d t h :    6 0 p x ;
+                 h e i g h t :    6 0 p x ;
+                 b o r d e r - r a d i u s :    5 0 % ;
+                 b a c k g r o u n d - s i z e :    c o v e r ;
+                 b a c k g r o u n d - p o s i t i o n :    c e n t e r ;
+                 b o r d e r :    3 p x   s o l i d   # 0 0 d 2 f f ;
+                 b o x - s h a d o w :    0   0   1 5 p x   r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 5 ) ;
+         
+}
+
+         . g a l - c a r t r i d g e - l a b e l    {
+                 f o n t - s i z e :    1 8 p x ;
+                 c o l o r :    # 0 0 d 2 f f ;
+                 f o n t - w e i g h t :    b o l d ;
+                 t e x t - s h a d o w :    0   0   1 0 p x   r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 8 ) ,    2 p x   2 p x   4 p x   r g b a ( 0 ,    0 ,    0 ,    0 . 8 ) ;
+         
+}
+
+         / *   H i d e   g a m e p l a y U I   e l e m e n t s   w h e n   c h a r a c t e r   s e l e c t o r   i s   o p e n   * /     b o d y . g a l - t i t l e - a c t i v e   # g a l - c h a r a c t e r - s e l e c t o r . a c t i v e ~ # g a l - d i a l o g u e - b o x    {
+                 d i s p l a y :    n o n e    ! i m p o r t a n t ;
+         
+}
+
+     / *   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =           I n t e r a c t i v e   C h o i c e   S y s t e m   S t y l e s           = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =   * /         / *   C o n t i n u e   S t o r y   B u t t o n   * /     # g a l - c o n t i n u e - c o n t a i n e r    {
+                 p o s i t i o n :    a b s o l u t e ;
+                 b o t t o m :    1 2 0 p x ;
+                 l e f t :    5 0 % ;
+                 t r a n s f o r m :    t r a n s l a t e X ( - 5 0 % ) ;
+                 z - i n d e x :    1 0 ;
+         
+}
+
+         # g a l - c o n t i n u e - b t n    {
+                 b a c k g r o u n d :    l i n e a r - g r a d i e n t ( 1 3 5 d e g ,    r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 8 ) ,    r g b a ( 0 ,    2 5 5 ,    1 3 6 ,    0 . 8 ) ) ;
+                 b o r d e r :    2 p x   s o l i d   r g b a ( 2 5 5 ,    2 5 5 ,    2 5 5 ,    0 . 3 ) ;
+                 b o r d e r - r a d i u s :    2 5 p x ;
+                 p a d d i n g :    1 5 p x   4 0 p x ;
+                 f o n t - s i z e :    1 8 p x ;
+                 c o l o r :    w h i t e ;
+                 c u r s o r :    p o i n t e r ;
+                 t r a n s i t i o n :    a l l   0 . 3 s   e a s e ;
+                 t e x t - s h a d o w :    0   2 p x   4 p x   r g b a ( 0 ,    0 ,    0 ,    0 . 5 ) ;
+                 f o n t - w e i g h t :    b o l d ;
+         
+}
+
+         # g a l - c o n t i n u e - b t n : h o v e r    {
+                 t r a n s f o r m :    s c a l e ( 1 . 0 5 ) ;
+                 b o x - s h a d o w :    0   5 p x   2 0 p x   r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 6 ) ;
+         
+}
+
+         / *   C h o i c e   C o n t a i n e r   * /     # g a l - c h o i c e - c o n t a i n e r    {
+                 p o s i t i o n :    a b s o l u t e ;
+                 b o t t o m :    1 2 0 p x ;
+                 l e f t :    5 0 % ;
+                 t r a n s f o r m :    t r a n s l a t e X ( - 5 0 % ) ;
+                 w i d t h :    8 0 % ;
+                 m a x - w i d t h :    6 0 0 p x ;
+                 z - i n d e x :    1 0 ;
+         
+}
+
+         . g a l - c h o i c e - p r o m p t    {
+                 t e x t - a l i g n :    c e n t e r ;
+                 f o n t - s i z e :    1 6 p x ;
+                 c o l o r :    # 0 0 d 2 f f ;
+                 m a r g i n - b o t t o m :    1 5 p x ;
+                 t e x t - s h a d o w :    0   0   1 0 p x   r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 8 ) ;
+                 f o n t - w e i g h t :    b o l d ;
+         
+}
+
+         # g a l - c h o i c e - l i s t    {
+                 d i s p l a y :    f l e x ;
+                 f l e x - d i r e c t i o n :    c o l u m n ;
+                 g a p :    1 0 p x ;
+         
+}
+
+         . g a l - c h o i c e - b t n    {
+                 b a c k g r o u n d :    r g b a ( 0 ,    0 ,    0 ,    0 . 7 ) ;
+                 b o r d e r :    2 p x   s o l i d   r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 5 ) ;
+                 b o r d e r - r a d i u s :    1 0 p x ;
+                 p a d d i n g :    1 5 p x   2 0 p x ;
+                 c o l o r :    w h i t e ;
+                 f o n t - s i z e :    1 6 p x ;
+                 c u r s o r :    p o i n t e r ;
+                 t r a n s i t i o n :    a l l   0 . 2 s   e a s e ;
+                 t e x t - a l i g n :    l e f t ;
+         
+}
+
+         . g a l - c h o i c e - b t n : h o v e r    {
+                 b a c k g r o u n d :    r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 2 ) ;
+                 b o r d e r - c o l o r :    # 0 0 d 2 f f ;
+                 t r a n s f o r m :    t r a n s l a t e X ( 5 p x ) ;
+         
+}
+
+         . g a l - c h o i c e - b t n . s e l e c t e d    {
+                 b a c k g r o u n d :    r g b a ( 0 ,    2 5 5 ,    1 3 6 ,    0 . 3 ) ;
+                 b o r d e r - c o l o r :    # 0 0 f f 8 8 ;
+         
+}
+
+         . g a l - c h o i c e - b t n : d i s a b l e d    {
+                 o p a c i t y :    0 . 5 ;
+                 c u r s o r :    n o t - a l l o w e d ;
+         
+}
+
+     / *   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =           I n t e r a c t i v e   C h o i c e   S y s t e m   S t y l e s           = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =   * /         / *   C o n t i n u e   S t o r y   B u t t o n   * /     # g a l - c o n t i n u e - c o n t a i n e r    {
+                 p o s i t i o n :    a b s o l u t e ;
+                 b o t t o m :    1 2 0 p x ;
+                 l e f t :    5 0 % ;
+                 t r a n s f o r m :    t r a n s l a t e X ( - 5 0 % ) ;
+                 z - i n d e x :    1 0 ;
+         
+}
+
+         # g a l - c o n t i n u e - b t n    {
+                 b a c k g r o u n d :    l i n e a r - g r a d i e n t ( 1 3 5 d e g ,    r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 8 ) ,    r g b a ( 0 ,    2 5 5 ,    1 3 6 ,    0 . 8 ) ) ;
+                 b o r d e r :    2 p x   s o l i d   r g b a ( 2 5 5 ,    2 5 5 ,    2 5 5 ,    0 . 3 ) ;
+                 b o r d e r - r a d i u s :    2 5 p x ;
+                 p a d d i n g :    1 5 p x   4 0 p x ;
+                 f o n t - s i z e :    1 8 p x ;
+                 c o l o r :    w h i t e ;
+                 c u r s o r :    p o i n t e r ;
+                 t r a n s i t i o n :    a l l   0 . 3 s   e a s e ;
+                 t e x t - s h a d o w :    0   2 p x   4 p x   r g b a ( 0 ,    0 ,    0 ,    0 . 5 ) ;
+                 f o n t - w e i g h t :    b o l d ;
+         
+}
+
+         # g a l - c o n t i n u e - b t n : h o v e r    {
+                 t r a n s f o r m :    s c a l e ( 1 . 0 5 ) ;
+                 b o x - s h a d o w :    0   5 p x   2 0 p x   r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 6 ) ;
+         
+}
+
+         / *   C h o i c e   C o n t a i n e r   * /     # g a l - c h o i c e - c o n t a i n e r    {
+                 p o s i t i o n :    a b s o l u t e ;
+                 b o t t o m :    1 2 0 p x ;
+                 l e f t :    5 0 % ;
+                 t r a n s f o r m :    t r a n s l a t e X ( - 5 0 % ) ;
+                 w i d t h :    8 0 % ;
+                 m a x - w i d t h :    6 0 0 p x ;
+                 z - i n d e x :    1 0 ;
+         
+}
+
+         . g a l - c h o i c e - p r o m p t    {
+                 t e x t - a l i g n :    c e n t e r ;
+                 f o n t - s i z e :    1 6 p x ;
+                 c o l o r :    # 0 0 d 2 f f ;
+                 m a r g i n - b o t t o m :    1 5 p x ;
+                 t e x t - s h a d o w :    0   0   1 0 p x   r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 8 ) ;
+                 f o n t - w e i g h t :    b o l d ;
+         
+}
+
+         # g a l - c h o i c e - l i s t    {
+                 d i s p l a y :    f l e x ;
+                 f l e x - d i r e c t i o n :    c o l u m n ;
+                 g a p :    1 0 p x ;
+         
+}
+
+         . g a l - c h o i c e - b t n    {
+                 b a c k g r o u n d :    r g b a ( 0 ,    0 ,    0 ,    0 . 7 ) ;
+                 b o r d e r :    2 p x   s o l i d   r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 5 ) ;
+                 b o r d e r - r a d i u s :    1 0 p x ;
+                 p a d d i n g :    1 5 p x   2 0 p x ;
+                 c o l o r :    w h i t e ;
+                 f o n t - s i z e :    1 6 p x ;
+                 c u r s o r :    p o i n t e r ;
+                 t r a n s i t i o n :    a l l   0 . 2 s   e a s e ;
+                 t e x t - a l i g n :    l e f t ;
+         
+}
+
+         . g a l - c h o i c e - b t n : h o v e r    {
+                 b a c k g r o u n d :    r g b a ( 0 ,    2 1 0 ,    2 5 5 ,    0 . 2 ) ;
+                 b o r d e r - c o l o r :    # 0 0 d 2 f f ;
+                 t r a n s f o r m :    t r a n s l a t e X ( 5 p x ) ;
+         
+}
+
+         . g a l - c h o i c e - b t n . s e l e c t e d    {
+                 b a c k g r o u n d :    r g b a ( 0 ,    2 5 5 ,    1 3 6 ,    0 . 3 ) ;
+                 b o r d e r - c o l o r :    # 0 0 f f 8 8 ;
+         
+}
+
+         . g a l - c h o i c e - b t n : d i s a b l e d    {
+                 o p a c i t y :    0 . 5 ;
+                 c u r s o r :    n o t - a l l o w e d ;
+         
+}
+
+     
+/* ==========================================
+   Interactive Choice System Styles
+   ========================================== */
+
+/* Continue Story Button */
+#gal-continue-container {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+#gal-continue-btn {
+    background: linear-gradient(135deg, rgba(0, 210, 255, 0.8), rgba(0, 255, 136, 0.8));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    padding: 15px 40px;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+}
+
+/* ==========================================
+   Interactive Choice System Styles
+   ========================================== */
+
+/* Continue Story Button */
+#gal-continue-container {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+#gal-continue-btn {
+    background: linear-gradient(135deg, rgba(0, 210, 255, 0.8), rgba(0, 255, 136, 0.8));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    padding: 15px 40px;
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+}
+
+#gal-continue-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(0, 210, 255, 0.6);
+}
+
+/* Choice Container */
+#gal-choice-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%;
+    max-width: 550px;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 30px;
+    border-radius: 15px;
+    border: 2px solid rgba(0, 210, 255, 0.6);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+}
+
+.gal-choice-prompt {
+    text-align: center;
+    font-size: 18px;
+    color: #00d2ff;
+    margin-bottom: 25px;
+    text-shadow: 0 0 15px rgba(0, 210, 255, 1);
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+#gal-choice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.gal-choice-btn {
+    background: rgba(20, 20, 30, 0.9);
+    border: 2px solid rgba(0, 210, 255, 0.6);
+    border-radius: 8px;
+    padding: 18px 25px;
+    color: white;
+    font-size: 17px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+.gal-choice-btn:hover {
+    background: rgba(0, 210, 255, 0.25);
+    border-color: #00d2ff;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0, 210, 255, 0.5);
+}
+
+.gal-choice-btn.selected {
+    background: rgba(0, 255, 136, 0.4);
+    border-color: #00ff88;
+    box-shadow: 0 5px 20px rgba(0, 255, 136, 0.6);
+}
+
+.gal-choice-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+/* Loading Overlay */
+#gal-loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    backdrop-filter: blur(3px);
+}
+
+.gal-loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #00d4ff;
+    border-radius: 50%;
+    animation: gal-spin 1s linear infinite;
+}
+
+@keyframes gal-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.gal-loading-text {
+    margin-top: 20px;
+    color: #fff;
+    font-size: 18px;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* Save/Load Menu Overlay */
+.gal-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100000;
+    backdrop-filter: blur(5px);
+}
+
+.gal-menu-container {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    min-width: 500px;
+    max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.gal-menu-container h2 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 24px;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.gal-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.gal-save-slot {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.gal-save-slot:hover {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: rgba(0, 212, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.gal-save-slot.occupied {
+    border-color: rgba(0, 212, 255, 0.3);
+}
+
+.gal-save-slot.empty {
+    opacity: 0.6;
+}
+
+.gal-save-slot.current-active-slot {
+    border-color: #00ff88;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}
+
+.gal-save-slot .slot-id {
+    font-size: 18px;
+    font-weight: bold;
+    color: #00d4ff;
+    margin-bottom: 10px;
+}
+
+.gal-save-slot .current-badge {
+    background: linear-gradient(90deg, #00ff88, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.gal-save-slot .slot-info {
+    color: #aaa;
+    font-size: 13px;
+}
+
+.gal-save-slot .slot-date {
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.gal-save-slot .slot-preview {
+    color: #ccc;
+    font-size: 13px;
+    margin-bottom: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gal-save-slot .slot-progress {
+    color: #00d4ff;
+    font-size: 12px;
+}
+
+.gal-close-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.gal-close-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+}
