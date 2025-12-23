@@ -19,15 +19,25 @@ SillyTavern GAL Mode - 视觉小说风格界面扩展
 
 ## 📦 安装
 
-1. 下载此仓库到 SillyTavern 的 `extensions` 目录：
-   ```bash
-   cd SillyTavern/public/scripts/extensions/third-party
-   git clone https://github.com/MUXSET/Sgal-mode.git
+### 方法一：通过 SillyTavern 扩展安装器（推荐）
+
+1. 在 SillyTavern 中打开 **扩展** 面板
+2. 点击右上角的 **安装扩展** 按钮
+3. 输入仓库地址：
    ```
+   https://github.com/MUXSET/Sgal-mode
+   ```
+4. 点击 **Install for all users** 或 **Install just for me**
+5. 安装完成后刷新页面
 
-2. 重启 SillyTavern
+### 方法二：手动安装
 
-3. 点击界面上的 "📺 GAL Mode" 按钮启动
+```bash
+cd SillyTavern/public/scripts/extensions/third-party
+git clone https://github.com/MUXSET/Sgal-mode.git
+```
+
+安装后点击界面上的 **📺 GAL Mode** 按钮启动
 
 ## 🎮 使用方法
 
